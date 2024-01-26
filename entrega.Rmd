@@ -1,0 +1,840 @@
+---
+title: "Estudio estadístico de la calidad del agua y aire"
+author: "Cristina Suárez"
+output: html_document
+---
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    
+<h2>Creación de muestras</h2>
+    
+<p>En este apartado vamos a crear muestras de datos a partir de un fichero CSV.</p>
+    
+<p>Lo primero que vamos a hacer es cargar el fichero CSV.</p>
+    
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Cargamos el fichero CSV
+df <- read.csv("cities_air_quality_water_pollution.csv")
+head(df)
+```
+
+<p>Una vez cargado el fichero, vamos a crear una muestra de 100 datos.</p>
+    
+```{r, message=FALSE, warning=FALSE, comment=NA}
+library(dplyr)
+library(ggplot2)
+
+# creamos la primera muestra de 100 datos
+muestra1 <- df %>% sample_n(100)
+head(muestra1)
+
+# Agrupamos los datos por país
+muestra1 <- muestra1 %>% group_by(Country)
+head(muestra1)
+
+```
+
+
+<p>Y ahora vamos a crear otra muestra de 100 datos.</p>
+    
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Creamos otra muestra de 100 datos
+muestra2 <- sample_n(df, 100)
+head(muestra2)
+
+# Agrupamos los datos por país
+muestra2 <- muestra2 %>% group_by(Country)
+head(muestra2)
+
+
+```
+
+Para el test de Levene vamos a necesitar tres muestras, por lo que creamos una tercera.
+```{r, message=FALSE, warning=FALSE, comment=NA}
+muestra3 <- df %>% sample_n(100)
+head(muestra3)
+
+# Agrupamos los datos por país
+muestra3 <- muestra3 %>% group_by(Country)
+head(muestra3)
+
+```
+
+<p> Comprobamos que no existan datos atípicos en las muestras con dos diagramas de cajas y bigotes.</p>
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Diagrama de cajas y bigotes de la muestra 1 calidad del aire
+ggplot(muestra1, aes(x = "", y = AirQuality)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de cajas y bigotes de la muestra 1", y = "Calidad del aire") +
+  theme_minimal()
+
+#Diagrama de cajas y bigotes de la muestra 2 calidad del aire
+ggplot(muestra2, aes(x = "", y = AirQuality)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de cajas y bigotes de la muestra 2", y = "Calidad del aire") +
+  theme_minimal()
+
+#Diagrama de cajas y bigotes de la muestra 1 calidad del agua
+ggplot(muestra1, aes(x = "", y = WaterPollution)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de cajas y bigotes de la muestra 1", y = "Calidad del agua") +
+  theme_minimal()
+
+#Diagrama de cajas y bigotes de la muestra 2 calidad del agua
+ggplot(muestra2, aes(x = "", y = WaterPollution)) +
+  geom_boxplot() +
+  labs(title = "Diagrama de cajas y bigotes de la muestra 2", y = "Calidad del agua") +
+  theme_minimal()
+```
+<p>En caso de observarse algun dato atípico, no lo vamos a eliminar, por ser tan próximo al resto de datos.</p>
+
+
+<h2>Estimación puntual de las medias y cuasivarianzas muestrales. Análisis de los resultados.</h2>
+
+<p>En este apartado vamos a calcular la media y la cuasivarianza muestral de las dos muestras creadas anteriormente.</p>
+
+
+<p>Para calcular la media muestral de la primera muestra, vamos a utilizar la función mean().</p>
+    
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Calculamos la media muestral de las muestras respecto de la calidad del aire
+media1a <- mean(muestra1$AirQuality)
+media1a
+media2a <- mean(muestra2$AirQuality)
+media2a
+```
+
+<p>La calidad del aire media de la primera muestra es `r mean(muestra1$AirQuality)`, mientras que la media de la segunda muestra es `r mean(muestra2$AirQuality)`.</p>
+
+<p>La media sin embargo de la calidad del agua de las muestras es:</p>
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Calculamos la media muestral de las muestras respecto de la calidad del agua
+media1w <- mean(muestra1$WaterPollution)
+media1w
+media2w <- mean(muestra2$WaterPollution)
+media2w
+```
+
+<p>La calidad del agua media de la primera muestra es `r mean(muestra1$WaterPollution)`, mientras que la media de la segunda muestra es `r mean(muestra2$WaterPollution)`.</p>
+
+<p>Para calcular la cuasivarianza muestral de la primera muestra, vamos a utilizar la función var().</p>
+    
+```{r, message=FALSE, warning=FALSE, comment=NA}
+n1 <- length(muestra1$AirQuality)
+n2 <- length(muestra2$AirQuality)
+
+#Calculamos la cuasivarianza muestral de las muestras respecto de la calidad del aire
+cuasivarianza1a <- sum((muestra1$AirQuality - media1a)^2) / (n1 - 1)
+cuasivarianza1a
+cuasivarianza2a <- sum((muestra2$AirQuality - media2a)^2) / (n2 - 1)
+cuasivarianza2a
+
+#Calculamos la cuasivarianza muestral de las muestras respecto de la calidad del agua
+cuasivarianza1w <- sum((muestra1$WaterPollution - media1w)^2) / (n1 - 1)
+cuasivarianza1w
+cuasivarianza2w <- sum((muestra1$WaterPollution - media2w)^2) / (n2 - 1)
+cuasivarianza2w
+```
+
+Y las respectivas cuasidesviaciones típicas son:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Calculamos la cuasidesviación típica muestral de las muestras respecto de la calidad del aire
+cuasidesviacion1a <- sqrt(cuasivarianza1a)
+cuasidesviacion1a
+cuasidesviacion2a <- sqrt(cuasivarianza2a)
+cuasidesviacion2a
+
+#Calculamos la cuasidesviación típica muestral de las muestras respecto de la calidad del agua
+cuasidesviacion1w <- sqrt(cuasivarianza1w)
+cuasidesviacion1w
+cuasidesviacion2w <- sqrt(cuasivarianza2w)
+cuasidesviacion2w
+```
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+# Creamos un data frame con los valores de las cuasivarianzas y de las medias
+df <- data.frame(c("Muestra 1", "Muestra 2"), c(cuasivarianza1a, cuasivarianza2a), c(cuasivarianza1w, cuasivarianza2w), c(media1a, media2a), c(media1w, media2w))
+colnames(df) <- c("Muestra", "Cuasivarianza aire", "Cuasivarianza agua", "Media aire", "Media agua")
+df
+# Organizamos el dataframe con los valores de cuasivarianzas y medias
+df <- data.frame(
+  Muestra = c("Muestra 1", "Muestra 2"),
+  Cuasivarianza_Aire = c(cuasivarianza1a, cuasivarianza2a),
+  Cuasivarianza_Agua = c(cuasivarianza1w, cuasivarianza2w),
+  Media_Aire = c(media1a, media2a),
+  Media_Agua = c(media1w, media2w)
+)
+
+# Convertimos el dataframe a formato largo (tidy)
+df_long <- tidyr::gather(df, "Variable", "Valor", -Muestra)
+
+# Gráfico de barras
+ggplot(df_long, aes(x = Muestra, y = Valor, fill = Variable)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(title = "Cuasivarianzas y Medias de Muestras en Calidad del Aire y Agua", y = "Valor") +
+  facet_wrap(~Variable, scales = "free_y") +
+  theme_minimal()
+```
+
+<p> Conclusión General:
+
+Al analizar los resultados obtenidos, se observa variabilidad entre las muestras en términos de cuasivarianzas y medias tanto en la calidad del aire como en la calidad del agua. Estas diferencias sugieren la presencia de factores ambientales o geográficos que impactan de manera diversa en cada variable medida.
+
+La cuasivarianza más alta en una muestra indica una mayor dispersión de datos y posiblemente condiciones ambientales más variables o mediciones más amplias. Por otro lado, una media más alta puede indicar una mejor calidad promedio en la variable analizada.
+
+Es crucial destacar que estas interpretaciones son específicas para cada variable, y las conclusiones pueden variar según la naturaleza de los datos. La evaluación individual de cada métrica proporciona una comprensión más completa de las diferencias entre las muestras, subrayando la importancia de analizar cada variable por separado.
+
+En resumen, la diversidad en los resultados destaca la complejidad y singularidad de cada conjunto de datos. Estos hallazgos resaltan la necesidad de un enfoque contextualizado al interpretar resultados y subrayan la importancia de considerar factores específicos de cada variable para una comprensión completa y precisa.
+
+</p>
+
+<h2>Estimación de los intervalos de confianza de las medias y cuasivarianzas muestrales. Análisis de los resultados.</h2>
+
+<p>Estimación por intervalos de confianza al 95% de las medias poblacionales, varianzas poblacionales, diferencia de medias poblacionales y cociente de varianzas poblacionales. Análisis de los resultados.</p>
+
+
+<p> Primero tenemos que establecer alfa como 0.05.</p>
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+alpha <- 0.05
+```
+
+<h3>Intervalos de confianza de las medias poblacionales</h3>
+
+<p>He creados una función genérica para calcular los intervalos de confianza de la media poblacional, que es: </p>
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+ICT <- function(n, s1, alpha, media){
+  t0 <- qt(0.025, df = n - 1, lower.tail = FALSE)
+  ICM <- c(media - t0 * s1 / sqrt(n), media + t0 * s1 / sqrt(n))
+  ICM <- round(ICM, 3) 
+  return(ICM)
+}
+```
+
+<p>Y ahora vamos a calcular los intervalos de confianza de las medias poblacionales de las dos muestras.</p>
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+n1 <- length(muestra1$AirQuality)
+s1 <- sd(muestra1$AirQuality)
+ICT(n1, s1, alpha, media1a)
+print(paste0("intervalo de confianza para la media poblacional de la calidad del aire de la muestra 1 es: (", ICT(n1, s1, alpha, media1a)[1], ", ", ICT(n1, s1, alpha, media1a)[2], ")"))
+
+
+ICT(n2, cuasivarianza2a, alpha, media2a)
+print(paste0("intervalo de confianza para la media poblacional de la calidad del aire de la muestra 2 es: (", ICT(n2, cuasivarianza2a, alpha, media2a)[1], ", ", ICT(n2, cuasivarianza2a, alpha, media2a)[2], ")"))
+
+ICT(n1, cuasivarianza1w, alpha, media1w)
+print(paste0("intervalo de confianza para la media poblacional de la calidad del agua de la muestra 1 es: (", ICT(n1, cuasivarianza1w, alpha, media1w)[1], ", ", ICT(n1, cuasivarianza1w, alpha, media1w)[2], ")"))
+
+ICT(n2, cuasivarianza2w, alpha, media2w)
+print(paste0("intervalo de confianza para la media poblacional de la calidad del agua de la muestra 2 es: (", ICT(n2, cuasivarianza2w, alpha, media2w)[1], ", ", ICT(n2, cuasivarianza2w, alpha, media2w)[2], ")"))
+```
+
+<h3>Intervalos de confianza de las varianzas poblacionales</h3>
+
+Genero la función para calcular los intervalos de confianza de la varianza poblacional, que es: 
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#intervalo de confianza para la varianza poblacional
+ICV <- function(n, s1, alpha){
+  k2 <- qchisq(alpha/2, df = n - 1, lower.tail = FALSE)
+  k1 <- qchisq(1-alpha/2, df = n - 1, lower.tail = FALSE)
+  ICC <- c((n-1)*s1^2/k1, (n-1)*s1^2/k2)
+  ICC <- round(ICC, 3)
+  return(ICC)
+}
+```
+
+```{r, echo=FALSE}
+#calidad del aire
+ICV(n1, cuasidesviacion1a, 0.05)
+print(paste0("intervalo de confianza para la varianza poblacional de la calidad del aire de la muestra 1 es: (", ICV(n1, cuasivarianza1a, 0.05)[1], ", ", ICV(n1, cuasivarianza1a, 0.05)[2], ")"))
+
+ICV(n2, cuasidesviacion2a, 0.05)
+print(paste0("intervalo de confianza para la varianza poblacional de la calidad del aire de la muestra 2 es: (", ICV(n2, cuasivarianza2a, 0.05)[1], ", ", ICV(n2, cuasivarianza2a, 0.05)[2], ")"))
+
+#calidad del agua
+ICV(n1, cuasidesviacion1w, 0.05)
+print(paste0("intervalo de confianza para la varianza poblacional de la calidad del agua de la muestra 1 es: (", ICV(n1, cuasivarianza1w, 0.05)[1], ", ", ICV(n1, cuasivarianza1w, 0.05)[2], ")"))
+
+ICV(n2, cuasidesviacion2w, 0.05)
+print(paste0("intervalo de confianza para la varianza poblacional de la calidad del agua de la muestra 2 es: (", ICV(n2, cuasivarianza2w, 0.05)[1], ", ", ICV(n2, cuasivarianza2w, 0.05)[2], ")"))
+```
+
+
+<h3>Intervalos de confianza de las diferencias de medias poblacionales</h3>
+
+Genero la función para calcular los intervalos de confianza de la diferencia de medias poblacionales, que es: 
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#intervalo de confianza para la diferencia de medias poblacionales
+#intervalo de confianza para la diferencia de medias poblacionales de la calidad del agua
+IDM <- function(n1, n2, s1, s2, alpha){
+    t0 <- qt(0.025, df = n1 + n2 - 2, lower.tail = FALSE)
+    ICD <- c(media1a-media2a - t0 * sqrt(s1^2/n1 + s2^2/n2), media1a-media2a + t0 * sqrt(s1^2/n1 + s2^2/n2))
+    ICD <- round(ICD, 3)
+}
+```
+
+```{r, echo=FALSE}
+#calidad del aire
+IDM(n1, n2, cuasivarianza1a, cuasivarianza2a, 0.05)
+print(paste0("intervalo de confianza para la diferencia de medias poblacionales de la calidad del aire es: (", IDM(n1, n2, cuasivarianza1a, cuasivarianza2a, 0.05)[1], ", ", IDM(n1, n2, cuasivarianza1a, cuasivarianza2a, 0.05)[2], ")"))
+
+#calidad del agua
+IDM(n1, n2, cuasivarianza1w, cuasivarianza2w, 0.05)
+print(paste0("intervalo de confianza para la diferencia de medias poblacionales de la calidad del agua es: (", IDM(n1, n2, cuasivarianza1w, cuasivarianza2w, 0.05)[1], ", ", IDM(n1, n2, cuasivarianza1w, cuasivarianza2w, 0.05)[2], ")"))
+```
+
+
+<h3>Intervalos de confianza de el cociente de varianzas poblacionales</h3>
+
+Ahora genero la función para calcular los intervalos de confianza del cociente de varianzas poblacionales, que es: 
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+ICVs <- function(n1, n2, s1, s2, alpha){
+    F0 <- qf(0.025, df1 = n1 - 1, df2 = n2 - 1, lower.tail = FALSE)
+    ICF <- c((s1^2/s2^2)/F0, (s1^2/s2^2)*F0)
+    ICF <- round(ICF, 3)
+    
+    # Comprueba si el intervalo de confianza incluye el valor 1
+    if (ICF[1] <= 1 && ICF[2] >= 1) {
+        message <- "Las varianzas son iguales. El 1 está contenido en el intervalo."
+    } else {
+        message <- "Las varianzas no son iguales. El 1 no está contenido en el intervalo."
+    }
+    
+    return(list(ICF = ICF, message = message))
+}
+
+# Calidad del aire
+result_aire <- ICVs(n1, n2, cuasivarianza1a, cuasivarianza2a, 0.05)
+print(paste0("Intervalo de confianza para el cociente de varianzas poblacionales de la calidad del aire es: (", result_aire$ICF[1], ", ", result_aire$ICF[2], ")"))
+print(result_aire$message)
+
+# Calidad del agua
+result_agua <- ICVs(n1, n2, cuasivarianza1w, cuasivarianza2w, 0.05)
+print(paste0("Intervalo de confianza para el cociente de varianzas poblacionales de la calidad del agua es: (", result_agua$ICF[1], ", ", result_agua$ICF[2], ")"))
+print(result_agua$message)
+```
+
+
+<h2>Contraste de hipótesis sobre las medias y varianzas poblacionales. Análisis de los resultados.</h2>
+
+En este apartado vamos a realizar un contraste de hipótesis sobre las medias y varianzas poblacionales. Empezaremos por los métodos no paramétricos y después los paramétricos.
+
+Es importante tener en cuentra que hay que realizar en algunos contrastes otras pruebas previamente:
+
+
+Las pruebas de normalidad y de varianza se utilizan comúnmente en estadísticas para verificar los supuestos de ciertas pruebas estadísticas. 
+
+
+Prueba t de Student: Esta prueba asume que los datos siguen una distribución normal y que las varianzas de las dos poblaciones son iguales. Por lo tanto, antes de realizar una prueba t, es común realizar una prueba de normalidad (como la prueba de Shapiro-Wilk) y una prueba de igualdad de varianzas (como la prueba F de Fisher).
+
+
+Análisis de varianza (ANOVA): ANOVA también asume que los datos siguen una distribución normal y que las varianzas de las poblaciones son iguales. Por lo tanto, también es común realizar pruebas de normalidad y de igualdad de varianzas antes de realizar un ANOVA.
+
+
+Regresión lineal: Los residuos de un modelo de regresión lineal se asume que siguen una distribución normal con varianza constante. Por lo tanto, es común realizar pruebas de normalidad y de homocedasticidad (igualdad de varianzas) en los residuos de un modelo de regresión lineal.
+
+
+Por otro lado, hay pruebas estadísticas que no requieren que los datos sigan una distribución normal o que las varianzas sean iguales. Estas son conocidas como pruebas no paramétricas. Algunos ejemplos son la prueba de Wilcoxon, la prueba de Kruskal-Wallis y la prueba de chi-cuadrado. Estas pruebas no requieren pruebas de normalidad o de igualdad de varianzas.
+
+
+<h3>Contraste de hipótesis no paramétricos. Una muestra.</h3>
+
+Empezaremos con la prueba del signo:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}	
+#prueba de signos
+library("BSDA")
+sign_test_func <- function(data, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- SIGN.test(data, md = median(data), alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    cat("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ").\n")
+    
+    # Compara la mediana de la muestra con la mediana hipotética
+    if (median(data) > test_result$estimate) {
+      cat("La muestra es significativamente mayor que la mediana hipotética.\n")
+    } else if (median(data) < test_result$estimate) {
+      cat("La muestra es significativamente menor que la mediana hipotética.\n")
+    } else {
+      cat("La muestra es significativamente diferente de la mediana hipotética.\n")
+    }
+  } else if (test_result$p.value == alpha) {
+    cat("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, "). La muestra es marginalmente diferente de la mediana hipotética.\n")
+  } else {
+    cat("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "). La muestra no es significativamente diferente de la mediana hipotética.\n")
+  }
+  
+  # Devuelve el resultado del test
+  return(test_result)
+}
+
+# Función para realizar la prueba de signos y presentar conclusiones
+realizar_prueba_signos <- function(muestra, variable, alpha = 0.05) {
+  cat(paste("Prueba de signos para la variable '", variable, "' en la muestra:\n"))
+  test_result <- sign_test_func(muestra[[variable]], alpha)
+  cat("\n")
+  return(test_result)
+}
+
+# Realiza la prueba de signos para WaterPollution en muestra1
+test_result_water_m1 <- realizar_prueba_signos(muestra1, "WaterPollution", alpha = 0.05)
+
+# Realiza la prueba de signos para WaterPollution en muestra2
+test_result_water_m2 <- realizar_prueba_signos(muestra2, "WaterPollution", alpha = 0.05)
+
+# Realiza la prueba de signos para AirQuality en muestra1
+test_result_air_m1 <- realizar_prueba_signos(muestra1, "AirQuality", alpha = 0.05)
+
+# Realiza la prueba de signos para AirQuality en muestra2
+test_result_air_m2 <- realizar_prueba_signos(muestra2, "AirQuality", alpha = 0.05)
+
+```
+
+
+La prueba de rachas:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#prueba de rachas
+library(randtests) #para el test de racha
+runs.test(muestra1$WaterPollution)
+racha_tests <- function(data, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- runs.test(data, alternative = "two.sided")
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "). No muestra evidencia de que los datos  son aleatorios."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "). Muestra evidencia de que los datos son aleatorios."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1
+racha_tests(muestra1$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna WaterPollution de muestra2
+racha_tests(muestra2$WaterPollution, alpha = 0.05)
+
+# Usa la función con la columna AirQuality de muestra1
+racha_tests(muestra1$AirQuality, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra2
+racha_tests(muestra2$AirQuality, alpha = 0.05)
+```
+
+
+
+<h3>Contraste de hipótesis no paramétricos. Dos muestras.</h3>
+
+Prueba del signo:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+signo2_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- SIGN.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "). La mediana de la muestra 1 es diferente de la mediana de la muestra 2."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "). La mediana de la muestra 1 es igual a la mediana de la muestra 2."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+signo2_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+signo2_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+
+```
+
+
+Prueba de rachas:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#prueba de rachas para dos muestras
+racha2_tests <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- runs.test(data1, data2, alternative = "two.sided")
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "). No muestra evidencia suficiente de que los datos sean aleatorios."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "). Muestra evidencia suficiente de que los datos son aleatorios."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+racha2_tests(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+racha2_tests(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+Prueba de Wilcoxon:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Wilcoxon
+wilcoxon_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- wilcox.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), lo que significa que hay una diferencia significativa entre las muestras."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), lo que significa que no hay suficiente evidencia estadística para afirmar que hay una diferencia significativa entre las muestras."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+wilcoxon_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+wilcoxon_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+
+```
+
+
+Prueba de U Mann Whitney
+
+```{r, message=FALSE, warning=FALSE, comment=NA}	
+#prueba de mann whitney
+mannw_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- wilcox.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), lo que significa que hay diferencia significativa entre las muestras independientes."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), lo que significa que no hay suficiente evidencia estadística para afirmar que hay una diferencia significativa entre las muestras independientes."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+mannw_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+mannw_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Prueba de Kruskal-Wallis.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Kruskal-Wallis
+ktest <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- kruskal.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), indicando que existen diferencias significativas en las medianas entre los grupos independientes"))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), indicando que no hay suficiente evidencia estadística para afirmar que existen diferencias significativas en las medianas entre los grupos independientes"))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+ktest(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+ktest(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Prueba de Fisher.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Prueba de Fisher
+
+ftest <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- var.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), hay diferencias significativas en las proporciones entre los grupos."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("El p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No se rechaza la hipótesis nula porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), no hay evidencia suficiente para afirmar que hay diferencias significativas en las proporciones entre los grupos."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+ftest(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+ftest(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Correlación de Spearman.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#correlación de spearman
+correlacion_spearman <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- cor.test(data1, data2, method = "spearman", alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ")."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, ")."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+correlacion_spearman(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+correlacion_spearman(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+
+
+Test de levene.
+Para hacer el test de Levene se necesitan 3 muestras como mínimo, por lo que crearé otra muestra más.
+
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+# Test de Levene para tres muestras específicas
+levene_test <- function(data1, data2, data3, alpha = 0.05) {
+  # Combina los datos en un data frame
+  data <- data.frame(values = c(data1, data2, data3),
+                     group = factor(rep(c("Group1", "Group2", "Group3"), c(length(data1), length(data2), length(data3)))))
+
+  # Realiza la prueba de Levene
+  library(car)
+  test_result <- leveneTest(values ~ group, data = data)
+  
+  # Evalúa el p-valor
+  if (test_result[1, "Pr(>F)"] < alpha) {
+    print(paste("Hay diferencias significativas entre las varianzas de los grupos porque el p-valor (", test_result[1, "Pr(>F)"], ") es menor que alfa (", alpha, ")."))
+  } else if (test_result[1, "Pr(>F)"] == alpha) {
+    print(paste("No hay diferencias significativas entre las varianzas de los grupos porque el p-valor (", test_result[1, "Pr(>F)"], ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No hay diferencias significativas entre las varianzas de los grupos porque el p-valor (", test_result[1, "Pr(>F)"], ") es mayor que alfa (", alpha, ")."))
+  }
+}
+
+# Ejemplo de uso con las columnas WaterPollution de muestra1, muestra2 y muestra3
+levene_test(muestra1$WaterPollution, muestra2$WaterPollution, muestra3$WaterPollution, alpha = 0.05)
+
+# Ejemplo de uso con las columnas AirQuality de muestra1, muestra2 y muestra3
+levene_test(muestra1$AirQuality, muestra2$AirQuality, muestra3$AirQuality, alpha = 0.05)
+```
+
+
+Test de chi-cuadrado.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+
+#test de chi-cuadrado
+chisq_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de chi-cuadrado
+  test_result <- chisq.test(data1, data2)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ")."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, ")."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+chisq_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+chisq_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)  
+```
+
+
+<h3> Tests paramétricos. </h3>
+
+T-student para una muestra:
+  
+```{r, message=FALSE, warning=FALSE, comment=NA}
+ttest <- function(data, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- t.test(data, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("La media de la muestra es diferente de la media poblacional porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ")."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("La media de la muestra es igual a la media poblacional porque el p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("La media de la muestra es igual a la media poblacional porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, ")."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+ttest(muestra1$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+ttest(muestra1$AirQuality, alpha = 0.05)
+```
+
+T-student para dos muestras pareadas:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+
+#La prueba t pareada es un método que se usa para comprobar si la media entre pares de medidas es o no igual a cero.
+# Defino la función para la prueba t pareada
+paired_t_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba t pareada
+  test_result <- t.test(data1, data2, paired = TRUE)
+  
+  # Comprueba si el p-valor es menor que alfa
+  if (test_result$p.value < alpha) {
+    print(paste("Como el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), rechazamos la hipótesis nula. Esto sugiere que las medias de los dos conjuntos de datos son significativamente diferentes.", sep = ""))
+  } else {
+    print(paste("Como el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), no rechazamos la hipótesis nula. Esto sugiere que no hay una diferencia significativa entre las medias de los dos conjuntos de datos.", sep = ""))
+  }
+}
+
+# Usar la función con la columna WaterPollution de muestra1 y muestra2
+paired_t_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usar la función con la columna AirQuality de muestra1 y muestra2
+paired_t_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+Prueba T-student de muestras no pareadas:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+# Defino la función para la prueba t no apareada
+unpaired_t_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba t no apareada
+  test_result <- t.test(data1, data2, paired = FALSE)
+  
+  # Imprime el resultado del test
+  print(test_result)
+  
+  # Comprueba si el p-valor es menor que alfa
+  if (test_result$p.value < alpha) {
+    print(paste("Como el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), rechazamos la hipótesis nula. Esto sugiere que las medias de los dos conjuntos de datos son significativamente diferentes.", sep = ""))
+  } else {
+    print(paste("Como el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), no rechazamos la hipótesis nula. Esto sugiere que no hay una diferencia significativa entre las medias de los dos conjuntos de datos.", sep = ""))
+  }
+}
+
+# Usar la función con la columna WaterPollution de muestra1 y muestra2
+unpaired_t_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+
+# Usar la función con la columna AirQuality de muestra1 y muestra2
+unpaired_t_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Prueba de varianzas iguales:
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+# Defino la función para la prueba de varianzas iguales
+var_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de varianzas iguales
+  test_result <- var.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Imprime el resultado del test
+  print(test_result)
+  
+  # Comprueba si el p-valor es menor que alfa
+  if (test_result$p.value < alpha) {
+    print(paste("Como el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, "), rechazamos la hipótesis nula. Esto sugiere que las varianzas de los dos conjuntos de datos son significativamente diferentes.", sep = ""))
+  } else {
+    print(paste("Como el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, "), no rechazamos la hipótesis nula. Esto sugiere que no hay una diferencia significativa entre las varianzas de los dos conjuntos de datos.", sep = ""))
+  }
+}
+
+# Usar la función con la columna WaterPollution de muestra1 y muestra2
+var_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+
+# Usar la función con la columna AirQuality de muestra1 y muestra2
+var_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Kolmogorov-Smirnov.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#Kolmogorov-Smirnov
+ks_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de signos
+  test_result <- ks.test(data1, data2, alternative = "two.sided", conf.level = 1 - alpha)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ")."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, ")."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+ks_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+ks_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)
+```
+
+
+Prueba de chi-cuadrado.
+
+```{r, message=FALSE, warning=FALSE, comment=NA}
+#test de chi-cuadrado
+chisq_test <- function(data1, data2, alpha = 0.05) {
+  # Realiza la prueba de chi-cuadrado
+  test_result <- chisq.test(data1, data2)
+  
+  # Evalúa el p-valor
+  if (test_result$p.value < alpha) {
+    print(paste("Hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es menor que alfa (", alpha, ")."))
+  } else if (test_result$p.value == alpha) {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es igual a alfa (", alpha, ")."))
+  } else {
+    print(paste("No hay correlación entre las variables porque el p-valor (", test_result$p.value, ") es mayor que alfa (", alpha, ")."))
+  }
+  
+}
+
+# Usa la función con la columna WaterPollution de muestra1 y muestra2
+chisq_test(muestra1$WaterPollution, muestra2$WaterPollution, alpha = 0.05)
+# Usa la funcion con la columna AirQuality de muestra1 y muestra2
+chisq_test(muestra1$AirQuality, muestra2$AirQuality, alpha = 0.05)  
+```
+
